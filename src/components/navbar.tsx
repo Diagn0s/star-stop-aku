@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Menu, Search, X, ChevronDown } from "lucide-react";
+import { Menu, Search, X, ChevronDown, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import { MobileNav } from "./mobile-nav";
+import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { href: "/", label: "Anasayfa" },
@@ -33,23 +34,33 @@ const navLinks = [
 ];
 
 const socialLinks = [
-  { href: "#", label: "Facebook", icon: "f" },
-  { href: "#", label: "Twitter", icon: "𝕏" },
-  { href: "#", label: "Instagram", icon: "📷" },
-  { href: "#", label: "LinkedIn", icon: "in" },
-  { href: "#", label: "YouTube", icon: "▶" },
+  { href: "#", label: "Facebook", icon: Facebook },
+  { href: "#", label: "Twitter", icon: Twitter },
+  { href: "#", label: "Instagram", icon: Instagram },
+  { href: "#", label: "LinkedIn", icon: Linkedin },
+  { href: "#", label: "YouTube", icon: Youtube },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // In a real app, you would redirect to a search page
+      window.location.href = `/urunler?q=${encodeURIComponent(searchQuery)}`;
+    }
+  };
 
   return (
     <header
@@ -59,9 +70,9 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between h-[72px]">
+        <nav className="flex items-center justify-between h-[72px] relative">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href="/" className="flex items-center gap-2 shrink-0 relative z-10">
             <div className="flex items-center">
               <svg className="h-10 w-10 text-brand-orange" viewBox="0 0 40 40" fill="none">
                 <path d="M12 8L20 4L28 8V20L20 32L12 20V8Z" fill="currentColor" opacity="0.15"/>
@@ -81,7 +92,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className={cn("hidden lg:flex items-center gap-8 transition-opacity duration-300", isSearchOpen ? "opacity-0 pointer-events-none" : "opacity-100")}>
             {navLinks.map((link) => (
               <div
                 key={link.href}
@@ -120,20 +131,52 @@ export function Navbar() {
           </div>
 
           {/* Right Side - Search + Social */}
-          <div className="hidden lg:flex items-center gap-4">
-            <button className="p-2 text-gray-500 hover:text-brand-navy transition-colors" aria-label="Ara">
-              <Search className="h-5 w-5" />
+          <div className="hidden lg:flex items-center gap-4 relative z-10">
+            {/* Search Bar Animation */}
+            <AnimatePresence>
+              {isSearchOpen && (
+                <motion.form
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 300, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  onSubmit={handleSearch}
+                  className="absolute right-full mr-4 flex items-center bg-gray-50 rounded-full border border-gray-200 overflow-hidden"
+                >
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Ürün veya marka arayın..."
+                    className="w-full bg-transparent px-4 py-2 outline-none text-sm text-gray-700"
+                    autoFocus
+                  />
+                  <button type="submit" className="pr-4 text-brand-orange">
+                    <ArrowRightIcon className="h-4 w-4" />
+                  </button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+
+            <button 
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-2 text-gray-500 hover:text-brand-navy transition-colors bg-gray-50 rounded-full border border-gray-100 hover:border-gray-200" 
+              aria-label="Ara"
+            >
+              {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
             </button>
             <div className="w-px h-6 bg-gray-200" />
-            <div className="flex items-center gap-2.5">
+            
+            {/* Social Icons (Larger) */}
+            <div className="flex items-center gap-3">
               {socialLinks.map((social, i) => (
                 <a
                   key={i}
                   href={social.href}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-xs text-gray-500 hover:text-brand-orange transition-colors"
+                  className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-50 border border-gray-100 text-gray-500 hover:bg-brand-orange hover:text-white hover:border-brand-orange transition-all duration-300 shadow-sm hover:shadow-md"
                   aria-label={social.label}
                 >
-                  <span className="text-[11px] font-medium">{social.icon}</span>
+                  <social.icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
@@ -156,5 +199,26 @@ export function Navbar() {
         links={navLinks}
       />
     </header>
+  );
+}
+
+// Arrow icon for search
+function ArrowRightIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
   );
 }
