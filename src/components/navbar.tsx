@@ -137,11 +137,11 @@ export function Navbar() {
               {isSearchOpen && (
                 <motion.form
                   initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 300, opacity: 1 }}
+                  animate={{ width: 700, opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   onSubmit={handleSearch}
-                  className="absolute right-full mr-4 flex items-center bg-gray-50 rounded-full border border-gray-200 overflow-hidden"
+                  className="absolute right-full mr-4 flex items-center bg-gray-50 rounded-full border border-gray-200 overflow-hidden h-12"
                 >
                   <input
                     type="text"
